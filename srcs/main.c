@@ -117,6 +117,7 @@ typedef struct Player{
 	float RotationAngle;
 	float walkSpeed;
 	float turnSpeed;
+	int color;
 } player;
 
 void init_player(player *player)
@@ -129,7 +130,7 @@ void init_player(player *player)
 	player->RotationAngle = 3.14/2;
 	player->walkSpeed = 10;
 	player->turnSpeed = 45 * (3.14/2);
-
+	player->color = create_trgb(0, 255, 0, 0);
 }
 
 
@@ -137,6 +138,7 @@ void init_player(player *player)
 typedef struct  s_vars {
         void    *mlx;
         void    *win;
+		player player;
 }               t_vars;
 
 
@@ -158,11 +160,35 @@ int keypress(int keycode, t_vars *vars)
 	return (0);
 }
 
+int renderPlayer(t_vars *vars){
+	filled_square(vars->mlx, vars->win, vars->player.x, vars->player.y,
+	vars->player.size, vars->player.color);
+	return(0);
+}
+
+int render (t_vars *vars)
+{
+	//render_map
+
+	//renderPlayer
+	renderPlayer(vars);
+	return (0);
+
+}
+
+int game(t_vars *vars)
+{
+	//process_input (keypress keyrelease)
+	//update
+	//render
+	render(vars);
+	return (0);
+}
+
 
 int main(){
-	player player;
+
 	t_vars    vars;
-	int red;
 	int map[14][33] = {
 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
 {1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
@@ -181,9 +207,10 @@ int main(){
 	};
 
 
-	red = create_trgb(0, 255, 0, 0);
-	init_player(&player);
 
+
+
+	init_player(&vars.player);
 
 
 	vars.mlx = mlx_init();
@@ -193,19 +220,16 @@ int main(){
 	//square(mlx_ptr, win_ptr, 260, 270, 30);
 	//circle(mlx_ptr, win_ptr, 250, 250, 30);
 	//filled_square(mlx_ptr, win_ptr, 260, 270, 30);
+
 	draw_map(vars.mlx, vars.win, 14, 33, map, 20);
-
-	printf("%f, %f", player.x, player.y);
-	filled_square(vars.mlx, vars.win, player.x, player.y, player.size, red);
-
 
 	mlx_hook(vars.win, 2, 1L<<0, keypress, &vars);
 	mlx_hook(vars.win, 33, 1L<<17, close, &vars);
-
+	mlx_loop_hook(vars.mlx, game, &vars);
 	mlx_loop(vars.mlx);
 
 	// analisar memory leak no final
-	//mlx_destroy_display(vars.mlx); 
+	//mlx_destroy_display(vars.mlx);
 	//free(vars.mlx);
 	return (0);
 
