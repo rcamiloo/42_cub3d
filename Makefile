@@ -3,7 +3,7 @@ SRCS_DIR = 	srcs
 OBJS_DIR =	.objs
 MLX_DIR = 	mlx_linux
 MLX = 		$(MLX_DIR)/libmlx.a
-SRCS = 		$(SRCS_DIR)/main.c
+SRCS = 		$(SRCS_DIR)/main.c $(SRCS_DIR)/functions.c
 
 OBJS = 		$(patsubst $(SRCS_DIR)%.c, $(OBJS_DIR)%.o, $(SRCS))
 
