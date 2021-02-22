@@ -1,0 +1,115 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   teste_main.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rcamilo- <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/01/20 13:17:38 by rcamilo-          #+#    #+#             */
+/*   Updated: 2020/01/20 20:39:00 by rcamilo-         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include <stdio.h>
+#include <ctype.h>
+
+int	ft_isalpha(char c);
+int	ft_isdigit(char c);
+int	ft_isprint(char c);
+int	ft_isascii(char c);
+int	ft_isalnum(char c);
+int	ft_toupper(int c);
+int	ft_tolower(int c);
+
+int	main(void)
+{
+	printf("ft_isalpha\n");
+	printf("A: %d\n", ft_isalpha('A'));
+	printf("A: %d\n", isalpha('A'));
+	printf("*: %d\n", ft_isalpha('*'));
+	printf("*: %d\n", isalpha('*'));
+	printf("/: %d\n", ft_isalpha('/'));
+	printf("/: %d\n", isalpha('/'));
+	printf("z: %d\n", ft_isalpha('z'));
+	printf("z: %d\n", isalpha('z'));
+
+	printf("\nft_isdigit\n");
+	printf("5: %d\n", ft_isdigit('5'));
+	printf("5: %d\n", isdigit('5'));
+	printf("*: %d\n", ft_isdigit('*'));
+	printf("*: %d\n", isdigit('*'));
+	printf("a: %d\n", ft_isdigit('a'));
+	printf("a: %d\n", isdigit('a'));
+
+	printf("\nft_isprint\n");
+	printf("5: %d\n", ft_isprint('5'));
+	printf("5: %d\n", isprint('5'));
+	printf("*: %d\n", ft_isprint('*'));
+	printf("*: %d\n", isprint('*'));
+	printf("a: %d\n", ft_isprint('a'));
+	printf("a: %d\n", isprint('a'));
+	printf("' ': %d\n", ft_isprint(' '));
+	printf("' ': %d\n", isprint(' '));
+	printf("\\n: %d\n", ft_isprint('\n'));
+	printf("\\n: %d\n", isprint('\n'));
+	printf("\\t: %d\n", ft_isprint('\t'));
+	printf("\\t: %d\n", isprint('\t'));
+
+	printf("\nft_isascii\n");
+	printf("5: %d\n", ft_isascii('5'));
+	printf("5: %d\n", isascii('5'));
+	printf(": %d\n", ft_isascii((char)128));
+	printf(": %d\n", isascii((char)128));
+	printf("a: %d\n", ft_isascii('a'));
+	printf("a: %d\n", isascii('a'));
+	printf("' ': %d\n", ft_isascii(' '));
+	printf("' ': %d\n", isascii(' '));
+	printf("\\n: %d\n", ft_isascii('\n'));
+	printf("\\n: %d\n", isascii('\n'));
+	printf("\\t: %d\n", ft_isascii('\t'));
+	printf("\\t: %d\n", isascii('\t'));
+
+	printf("\nft_isalnum\n");
+	printf("5: %d\n", ft_isalnum('5'));
+	printf("5: %d\n", isalnum('5'));
+	printf(": %d\n", ft_isalnum((char)128));
+	printf(": %d\n", isalnum((char)128));
+	printf("a: %d\n", ft_isalnum('a'));
+	printf("a: %d\n", isalnum('a'));
+	printf("' ': %d\n", ft_isalnum(' '));
+	printf("' ': %d\n", isalnum(' '));
+	printf("\\n: %d\n", ft_isalnum('\n'));
+	printf("\\n: %d\n", isalnum('\n'));
+	printf("\\t: %d\n", ft_isalnum('\t'));
+	printf("\\t: %d\n", isalnum('\t'));
+
+	printf("\nft_toupper\n");
+	printf("5: %c\n", ft_toupper('5'));
+	printf("5: %c\n", toupper('5'));
+	printf("A: %c\n", ft_toupper('A'));
+	printf("A: %c\n", toupper('A'));
+	printf("a: %c\n", ft_toupper('a'));
+	printf("a: %c\n", toupper('a'));
+	printf("' ': %c\n", ft_toupper(' '));
+	printf("' ': %c\n", toupper(' '));
+	printf("\\n: %c\n", ft_toupper('\n'));
+	printf("\\n: %c\n", toupper('\n'));
+	printf("\\t: %c\n", ft_toupper('\t'));
+	printf("\\t: %c\n", toupper('\t'));
+
+	printf("\nft_tolower\n");
+	printf("5: %c\n", ft_tolower('5'));
+	printf("5: %c\n", tolower('5'));
+	printf("A: %c\n", ft_tolower('A'));
+	printf("A: %c\n", tolower('A'));
+	printf("a: %c\n", ft_tolower('a'));
+	printf("a: %c\n", tolower('a'));
+	printf("' ': %c\n", ft_tolower(' '));
+	printf("' ': %c\n", tolower(' '));
+	printf("\\n: %c\n", ft_tolower('\n'));
+	printf("\\n: %c\n", tolower('\n'));
+	printf("\\t: %c\n", ft_tolower('\t'));
+	printf("\\t: %c\n", tolower('\t'));
+
+	return (0);
+}
