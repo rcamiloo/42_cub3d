@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3d.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
+/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/15 21:53:14 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/02/20 18:11:04 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/02/23 21:27:06 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,18 @@ typedef struct	s_img {
 	int		line_length;
 	int		endian;
 }				t_img;
+
+typedef struct	s_scene {
+	char	*wall_so;
+	char	*wall_no;
+	char	*wall_we;
+	char	*wall_ea;
+	char	*sprite;
+	int		color_floor;
+	int		color_ceiling;
+	int		res_width;
+	int		res_height;
+}				t_scene;
 
 typedef struct	s_player{
 	float	x;
