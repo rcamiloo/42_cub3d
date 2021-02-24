@@ -71,6 +71,7 @@ int process_colors(char **token, t_scene *scene)
 	r = atoi(rgb[0]);
 	g = atoi(rgb[1]);
 	b = atoi(rgb[2]);
+	free(rgb);
 	if ((r < 0 || r > 255) || (g < 0 || g > 255) || (b < 0 || b > 255))
 		return FAIL;
 	if (!ft_strncmp(token[0], "C\0", 2) && !scene->color_ceiling)
@@ -134,6 +135,7 @@ int process_line (char *line, t_scene *scene)
 		process_resolution(token, scene);
 	else
 		printf("FAIL\n");
+	free(token);
 	return (SUCESS);
 }
 
@@ -164,6 +166,7 @@ int process_file (char *file, t_scene *scene)
 		}
 		else
 			return (FAIL);
+	free(line);
 	close(fd);
 	return (SUCESS);
 }
@@ -174,13 +177,9 @@ int process_file (char *file, t_scene *scene)
 
 int main (int argc, char *argv[])
 {
-	int fd;
-	char *linha;
-	char buf[2];
-	int exists;
+
 	t_scene scene = {0};
 
-	exists = 0;
 
 	if (argc == 2)
 	{
