@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: camilo <camilo@student.42.fr>              +#+  +:+       +#+        */
+/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/23 23:14:23 by camilo            #+#    #+#             */
-/*   Updated: 2021/02/23 23:19:46 by camilo           ###   ########.fr       */
+/*   Updated: 2021/02/24 18:38:22 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,10 @@ int	process_colors(char **token, t_scene *scene)
 	else if (!ft_strncmp(token[0], "F\0", 2) && !scene->color_floor)
 		scene->color_floor = create_trgb(0, r, g, b);
 	else
+	{
+		printf("Error\nColor error\n");
 		return (FAIL);
+	}
 	return (SUCESS);
 }
 
@@ -99,7 +102,10 @@ int	process_texture(char **token, t_scene *scene)
 {
 
 	if (check_existence(token[1]) == FAIL)
+	{
+		printf("Error on line: ");
 		return (FAIL);
+	}
 	if (!ft_strncmp(token[0], "NO\0", 3) && !scene->wall_no)
 		scene->wall_no = token[1];
 	else if (!ft_strncmp(token[0], "SO\0", 3) && !scene->wall_so)
@@ -111,7 +117,10 @@ int	process_texture(char **token, t_scene *scene)
 	else if (!ft_strncmp(token[0], "S\0", 2) && !scene->sprite)
 		scene->sprite = token[1];
 	else
+	{
+		printf("Error\nDuplicated parameter in line: ");
 		return (FAIL);
+	}
 	return (SUCESS);
 }
 
@@ -124,7 +133,10 @@ int	process_resolution(char **token, t_scene *scene)
 		scene->res_height = ft_atoi(token[2]);
 	}
 	else
+	{
+		printf("Error\nResolution error\n");
 		return (FAIL);
+	}
 	return (SUCESS);
 }
 
@@ -133,6 +145,7 @@ int	process_line(char *line, t_scene *scene)
 	char	**token;
 	int		i;
 	int		size;
+	int		control;
 
 	token = ft_split(line, ' ');
 	size = vector_size(token);
@@ -140,29 +153,36 @@ int	process_line(char *line, t_scene *scene)
 	if ((!ft_strncmp(token[0], "NO\0", 3) || !ft_strncmp(token[0], "SO\0", 3)
 	|| !ft_strncmp(token[0], "WE\0", 3) || !ft_strncmp(token[0], "EA\0", 3)
 	|| !ft_strncmp(token[0], "S\0", 2)) && size == 2)
-		process_texture(token, scene);
+		control = process_texture(token, scene);
 	else if ((!ft_strncmp(token[0], "F\0", 2)
 			|| !ft_strncmp(token[0], "C\0", 2)) && size == 2)
-		process_colors(token, scene);
+		control = process_colors(token, scene);
 	else if (!ft_strncmp(token[0], "R\0", 2) && size == 3)
-		process_resolution(token, scene);
+		control = process_resolution(token, scene);
 	else
-		printf("FAIL\n");
+	{
+		control = FAIL;
+		printf("Error\nProcessing line: ");
+	}
 	free(token);
-	return (SUCESS);
+	return (control);
 }
 
 int	process_file(char *file, t_scene *scene)
 {
 	int		fd;
 	char	*line;
+	int		count;
+	int		control;
 
 	fd = open(file, O_RDONLY);
-
-	while (get_next_line(fd, &line))
+	count = 0;
+	control = 1;
+	while (get_next_line(fd, &line) && control)
+	{
 		if (line[0] == 'R' || line[0] == 'N' || line[0] == 'S' || line[0] == 'W'
 			|| line[0] == 'E' || line[0] == 'F' || line[0] == 'C')
-			process_line(line, scene);
+			control = process_line(line, scene);
 		else if (line[0] == '\0')
 			line[0] = '\0';
 		else if (line[0] == '1' || line[0] == ' ')
@@ -179,9 +199,13 @@ int	process_file(char *file, t_scene *scene)
 		}
 		else
 			return (FAIL);
+		count += control? 1 : 0;
+	}
 	free(line);
 	close(fd);
-	return (SUCESS);
+	if (control == FAIL)
+		printf("%d\n", count);
+	return (control);
 }
 
 int	main(int argc, char *argv[])
@@ -192,9 +216,9 @@ int	main(int argc, char *argv[])
 	{
 		if (check_name(argv[1]) && check_existence(argv[1]))
 			process_file(argv[1], &scene);
-		printf("%s\n", scene.sprite);
-		printf("%d\n", scene.res_width);
-		printf("%d\n", scene.res_height);
+		//printf("%s\n", scene.sprite);
+		//printf("%d\n", scene.res_width);
+		//printf("%d\n", scene.res_height);
 	}
 	else
 	{
