@@ -1,10 +1,10 @@
 R 1920 1080
-NO ./north_texture.png
-SO ./south_texture.png
-WE ./west_texture.png
-EA ./east_texture.png
+NO ./maps/north_texture.png
+SO ./maps/south_texture.png
+WE ./maps/west_texture.png
+EA ./maps/east_texture.png
 
-S ./sprite_texture.png
+S ./maps/sprite_texture.png
 F 220,100,0
 C 225,30,0
 

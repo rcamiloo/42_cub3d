@@ -1,33 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   scene.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/02/23 23:14:23 by camilo            #+#    #+#             */
-/*   Updated: 2021/02/24 18:38:22 by rcamilo-         ###   ########.fr       */
+/*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
+/*   Updated: 2021/02/25 20:51:40 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include <fcntl.h>
-#include "../libft/libft.h"
-
-#define SUCESS 1
-#define FAIL 0
-
-typedef struct	s_scene {
-	char	*wall_so;
-	char	*wall_no;
-	char	*wall_we;
-	char	*wall_ea;
-	char	*sprite;
-	int		color_floor;
-	int		color_ceiling;
-	int		res_width;
-	int		res_height;
-}				t_scene;
+#include "scene.h"
 
 int	create_trgb(int t, int r, int g, int b)
 {
@@ -45,7 +28,7 @@ int	check_name(char *s)
 		check = ft_strnstr((s + size - 4), ".cub", size);
 	if (check == NULL)
 		printf("Error\nDescription: Wrong file extension\n");
-	return (check == NULL ? FAIL : SUCESS);
+	return (check == NULL ? FAIL : SUCCESS);
 }
 
 int	check_existence(char *s)
@@ -57,7 +40,7 @@ int	check_existence(char *s)
 		close(fd);
 	else
 		perror("Error\nDescription");
-	return (fd == -1 ? FAIL : SUCESS);
+	return (fd == -1 ? FAIL : SUCCESS);
 }
 
 int	vector_size(char **vector)
@@ -72,30 +55,71 @@ int	vector_size(char **vector)
 	return (i);
 }
 
-int	process_colors(char **token, t_scene *scene)
+int check_colors(char *s)
+{
+	int size;
+	int i;
+	int comma;
+
+	size = ft_strlen(s);
+	comma = 0;
+	if (size < 5)
+		return (FAIL);
+	else
+	{
+		i = 0;
+		while(i < size)
+		{
+			if (((s[i] - '0') < 0 || (s[i] - '0') > 9 ) && s[i] != ',')
+				return (FAIL);
+			else if (s[i] == ',')
+				comma++;
+			i++;
+		}
+	}
+	return (comma != 2 ? FAIL : SUCCESS);
+}
+
+int	process_colors(char *line, t_scene *scene)
 {
 	char	**rgb;
 	int		r;
 	int		g;
 	int		b;
+	char	*temp;
 
-	rgb = ft_split(token[1], ',');
+
+
+	temp = ft_sanitize(ft_strtrim(line, " ") + 1, " ");
+	rgb = ft_split(temp, ',');
+	if (check_colors(temp) == FAIL || vector_size(rgb) != 3)
+	{
+		printf("Error\nColor error in line: ");
+		return (FAIL);
+	}
 	r = atoi(rgb[0]);
 	g = atoi(rgb[1]);
 	b = atoi(rgb[2]);
 	free(rgb);
+	free(temp);
 	if ((r < 0 || r > 255) || (g < 0 || g > 255) || (b < 0 || b > 255))
+	{
+		printf("Error\nColor error in line: ");
 		return (FAIL);
-	if (!ft_strncmp(token[0], "C\0", 2) && !scene->color_ceiling)
+	}
+	rgb = ft_split(line, ' ');
+	if (rgb[0][0] == 'C' && !scene->color_ceiling)
 		scene->color_ceiling = create_trgb(0, r, g, b);
-	else if (!ft_strncmp(token[0], "F\0", 2) && !scene->color_floor)
+	else if (rgb[0][0] == 'F' && !scene->color_floor)
 		scene->color_floor = create_trgb(0, r, g, b);
 	else
 	{
-		printf("Error\nColor error\n");
+		printf("Error\nColor error in line: ");
 		return (FAIL);
 	}
-	return (SUCESS);
+	scene->control++;
+	free(temp);
+	return (SUCCESS);
 }
 
 int	process_texture(char **token, t_scene *scene)
@@ -121,23 +145,65 @@ int	process_texture(char **token, t_scene *scene)
 		printf("Error\nDuplicated parameter in line: ");
 		return (FAIL);
 	}
-	return (SUCESS);
+	scene->control++;
+	return (SUCCESS);
+}
+
+int check_resolution(char *s)
+{
+	int size;
+	int i;
+
+	size = ft_strlen(s);
+	i = 0;
+	while(i < size)
+	{
+		if ((s[i] - '0') < 0 || (s[i] - '0') > 9 )
+			return (FAIL);
+		i++;
+	}
+	return (SUCCESS);
 }
 
 int	process_resolution(char **token, t_scene *scene)
 {
 
+	if(!check_resolution(token[1]) || !check_resolution(token[2])
+		|| !ft_atoi(token[1]) || !ft_atoi(token[2]))
+	{
+		printf("Error\nResolution error in line: ");
+		return (FAIL);
+	}
 	if (!scene->res_height && !scene->res_width)
 	{
 		scene->res_width = ft_atoi(token[1]);
 		scene->res_height = ft_atoi(token[2]);
+		scene->control += 2;
 	}
 	else
 	{
-		printf("Error\nResolution error\n");
+		printf("Error\nResolution error in line: ");
 		return (FAIL);
 	}
-	return (SUCESS);
+	return (SUCCESS);
+}
+
+char *tab_sanitizer(char *s)
+{
+	int size;
+	int i;
+	char *temp;
+
+	size = ft_strlen(s);
+	temp = ft_strdup(s);
+	i = 0;
+	while (i < size)
+	{
+		if (temp[i] == '\t')
+			temp[i] = ' ';
+		i++;
+	}
+	return (temp);
 }
 
 int	process_line(char *line, t_scene *scene)
@@ -155,8 +221,8 @@ int	process_line(char *line, t_scene *scene)
 	|| !ft_strncmp(token[0], "S\0", 2)) && size == 2)
 		control = process_texture(token, scene);
 	else if ((!ft_strncmp(token[0], "F\0", 2)
-			|| !ft_strncmp(token[0], "C\0", 2)) && size == 2)
-		control = process_colors(token, scene);
+			|| !ft_strncmp(token[0], "C\0", 2)))
+		control = process_colors(line, scene);
 	else if (!ft_strncmp(token[0], "R\0", 2) && size == 3)
 		control = process_resolution(token, scene);
 	else
@@ -172,33 +238,51 @@ int	process_file(char *file, t_scene *scene)
 {
 	int		fd;
 	char	*line;
+	char	*temp;
 	int		count;
 	int		control;
+	char	**token;
 
 	fd = open(file, O_RDONLY);
 	count = 0;
 	control = 1;
 	while (get_next_line(fd, &line) && control)
 	{
-		if (line[0] == 'R' || line[0] == 'N' || line[0] == 'S' || line[0] == 'W'
-			|| line[0] == 'E' || line[0] == 'F' || line[0] == 'C')
+		temp = tab_sanitizer(line);
+		free (line);
+		line = temp;
+		token = ft_split(line, ' ');
+		if (token[0] == '\0')
+			control = 1;
+		else if (token[0][0] == 'R' || token[0][0] == 'N' || token[0][0] == 'S' || token[0][0] == 'W'
+			|| token[0][0] == 'E' || token[0][0] == 'F' || token[0][0] == 'C')
 			control = process_line(line, scene);
-		else if (line[0] == '\0')
-			line[0] = '\0';
-		else if (line[0] == '1' || line[0] == ' ')
+		else if (token[0][0] == '1' || token[0][0] == ' ')
 		{
-			printf("?%s\n", line);
+			if (scene->control != 9)
+			{
+				printf("Error\nNot enough parameters before map\n");
+				return (FAIL);
+			}
+			//printf("?%s\n", line);
 			while (get_next_line(fd, &line))
 			{
-				if (line[0] == '1' || line[0] == ' ')
-					printf("??%s\n", line);
+				if (token[0][0] == '1' || token[0][0] == ' ')
+					count = count;
 				else
-					return (FAIL);
+				{
+					printf("Error\nError in line: ");
+					control = FAIL;
+					break;
+				}
 			}
-			return (SUCESS);
+			return (SUCCESS);
 		}
 		else
-			return (FAIL);
+		{
+			printf("Error\nError in line: ");
+			control = FAIL;
+		}
 		count += control? 1 : 0;
 	}
 	free(line);
