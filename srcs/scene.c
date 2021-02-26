@@ -3,21 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   scene.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: camilo <camilo@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/02/25 20:51:40 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/02/25 22:01:46 by camilo           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene.h"
 
-int	create_trgb(int t, int r, int g, int b)
+int		create_trgb(int t, int r, int g, int b)
 {
 	return (t << 24 | r << 16 | g << 8 | b);
 }
 
-int	check_name(char *s)
+int		check_name(char *s)
 {
 	int		size;
 	char	*check;
@@ -31,7 +31,7 @@ int	check_name(char *s)
 	return (check == NULL ? FAIL : SUCCESS);
 }
 
-int	check_existence(char *s)
+int		check_existence(char *s)
 {
 	int fd;
 
@@ -43,7 +43,7 @@ int	check_existence(char *s)
 	return (fd == -1 ? FAIL : SUCCESS);
 }
 
-int	vector_size(char **vector)
+int		vector_size(char **vector)
 {
 	int i;
 
@@ -55,7 +55,7 @@ int	vector_size(char **vector)
 	return (i);
 }
 
-int check_colors(char *s)
+int		check_colors(char *s)
 {
 	int size;
 	int i;
@@ -68,9 +68,9 @@ int check_colors(char *s)
 	else
 	{
 		i = 0;
-		while(i < size)
+		while (i < size)
 		{
-			if (((s[i] - '0') < 0 || (s[i] - '0') > 9 ) && s[i] != ',')
+			if (((s[i] - '0') < 0 || (s[i] - '0') > 9) && s[i] != ',')
 				return (FAIL);
 			else if (s[i] == ',')
 				comma++;
@@ -80,15 +80,13 @@ int check_colors(char *s)
 	return (comma != 2 ? FAIL : SUCCESS);
 }
 
-int	process_colors(char *line, t_scene *scene)
+int		process_colors(char *line, t_scene *scene)
 {
 	char	**rgb;
 	int		r;
 	int		g;
 	int		b;
 	char	*temp;
-
-
 
 	temp = ft_sanitize(ft_strtrim(line, " ") + 1, " ");
 	rgb = ft_split(temp, ',');
@@ -122,9 +120,8 @@ int	process_colors(char *line, t_scene *scene)
 	return (SUCCESS);
 }
 
-int	process_texture(char **token, t_scene *scene)
+int		process_texture(char **token, t_scene *scene)
 {
-
 	if (check_existence(token[1]) == FAIL)
 	{
 		printf("Error on line: ");
@@ -149,26 +146,25 @@ int	process_texture(char **token, t_scene *scene)
 	return (SUCCESS);
 }
 
-int check_resolution(char *s)
+int		check_resolution(char *s)
 {
 	int size;
 	int i;
 
 	size = ft_strlen(s);
 	i = 0;
-	while(i < size)
+	while (i < size)
 	{
-		if ((s[i] - '0') < 0 || (s[i] - '0') > 9 )
+		if ((s[i] - '0') < 0 || (s[i] - '0') > 9)
 			return (FAIL);
 		i++;
 	}
 	return (SUCCESS);
 }
 
-int	process_resolution(char **token, t_scene *scene)
+int		process_resolution(char **token, t_scene *scene)
 {
-
-	if(!check_resolution(token[1]) || !check_resolution(token[2])
+	if (!check_resolution(token[1]) || !check_resolution(token[2])
 		|| !ft_atoi(token[1]) || !ft_atoi(token[2]))
 	{
 		printf("Error\nResolution error in line: ");
@@ -188,11 +184,11 @@ int	process_resolution(char **token, t_scene *scene)
 	return (SUCCESS);
 }
 
-char *tab_sanitizer(char *s)
+char	*tab_sanitizer(char *s)
 {
-	int size;
-	int i;
-	char *temp;
+	int		size;
+	int		i;
+	char	*temp;
 
 	size = ft_strlen(s);
 	temp = ft_strdup(s);
@@ -206,7 +202,7 @@ char *tab_sanitizer(char *s)
 	return (temp);
 }
 
-int	process_line(char *line, t_scene *scene)
+int		process_line(char *line, t_scene *scene)
 {
 	char	**token;
 	int		i;
@@ -215,7 +211,6 @@ int	process_line(char *line, t_scene *scene)
 
 	token = ft_split(line, ' ');
 	size = vector_size(token);
-
 	if ((!ft_strncmp(token[0], "NO\0", 3) || !ft_strncmp(token[0], "SO\0", 3)
 	|| !ft_strncmp(token[0], "WE\0", 3) || !ft_strncmp(token[0], "EA\0", 3)
 	|| !ft_strncmp(token[0], "S\0", 2)) && size == 2)
@@ -234,7 +229,7 @@ int	process_line(char *line, t_scene *scene)
 	return (control);
 }
 
-int	process_file(char *file, t_scene *scene)
+int		process_file(char *file, t_scene *scene)
 {
 	int		fd;
 	char	*line;
@@ -249,13 +244,14 @@ int	process_file(char *file, t_scene *scene)
 	while (get_next_line(fd, &line) && control)
 	{
 		temp = tab_sanitizer(line);
-		free (line);
+		free(line);
 		line = temp;
 		token = ft_split(line, ' ');
 		if (token[0] == '\0')
 			control = 1;
-		else if (token[0][0] == 'R' || token[0][0] == 'N' || token[0][0] == 'S' || token[0][0] == 'W'
-			|| token[0][0] == 'E' || token[0][0] == 'F' || token[0][0] == 'C')
+		else if (token[0][0] == 'R' || token[0][0] == 'N'
+			|| token[0][0] == 'S' || token[0][0] == 'W' || token[0][0] == 'E'
+			|| token[0][0] == 'F' || token[0][0] == 'C')
 			control = process_line(line, scene);
 		else if (token[0][0] == '1' || token[0][0] == ' ')
 		{
@@ -264,7 +260,6 @@ int	process_file(char *file, t_scene *scene)
 				printf("Error\nNot enough parameters before map\n");
 				return (FAIL);
 			}
-			//printf("?%s\n", line);
 			while (get_next_line(fd, &line))
 			{
 				if (token[0][0] == '1' || token[0][0] == ' ')
@@ -273,7 +268,7 @@ int	process_file(char *file, t_scene *scene)
 				{
 					printf("Error\nError in line: ");
 					control = FAIL;
-					break;
+					break ;
 				}
 			}
 			return (SUCCESS);
@@ -283,7 +278,7 @@ int	process_file(char *file, t_scene *scene)
 			printf("Error\nError in line: ");
 			control = FAIL;
 		}
-		count += control? 1 : 0;
+		count += control ? 1 : 0;
 	}
 	free(line);
 	close(fd);
@@ -292,7 +287,7 @@ int	process_file(char *file, t_scene *scene)
 	return (control);
 }
 
-int	main(int argc, char *argv[])
+int		main(int argc, char *argv[])
 {
 	t_scene scene = {0};
 
@@ -300,9 +295,7 @@ int	main(int argc, char *argv[])
 	{
 		if (check_name(argv[1]) && check_existence(argv[1]))
 			process_file(argv[1], &scene);
-		//printf("%s\n", scene.sprite);
-		//printf("%d\n", scene.res_width);
-		//printf("%d\n", scene.res_height);
+			argc = argc;
 	}
 	else
 	{
