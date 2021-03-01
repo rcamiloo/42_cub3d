@@ -6,7 +6,7 @@
 /*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:07:00 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/02/25 20:06:32 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/02/28 23:59:02 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,13 @@
 # define SUCCESS 1
 # define FAIL 0
 
+typedef struct	s_map
+{
+char	**matrix;
+int		max_columns;
+int		max_lines;
+}				t_map;
+
 typedef struct	s_scene {
 	char	*wall_so;
 	char	*wall_no;
@@ -30,7 +37,9 @@ typedef struct	s_scene {
 	int		res_width;
 	int		res_height;
 	int		control;
+	t_map	map;
 }				t_scene;
+
 
 
 int	create_trgb(int t, int r, int g, int b);

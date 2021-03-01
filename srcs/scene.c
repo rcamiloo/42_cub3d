@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   scene.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: camilo <camilo@student.42.fr>              +#+  +:+       +#+        */
+/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/02/25 22:01:46 by camilo           ###   ########.fr       */
+/*   Updated: 2021/03/01 00:33:07 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -229,6 +229,88 @@ int		process_line(char *line, t_scene *scene)
 	return (control);
 }
 
+
+
+
+char	**matrix_increase(char **matrix, int max_lines, int increase)
+{
+	char **temp;
+	int i;
+
+	if (!(temp = (char **)malloc (sizeof (char *) * (max_lines + increase + 1))))
+		return NULL;
+
+	i = 0;
+	while (i < max_lines)
+	{
+		if (!(temp[i] = ft_strdup(matrix[i])))
+			return NULL;
+		i++;
+	}
+	while (i <= max_lines + increase)
+		temp[i++] = NULL;
+	return temp;
+}
+
+void free_matrix(char **matrix)
+{
+	int i;
+
+	if (matrix == NULL)
+		return;
+	while (matrix[i])
+		free(matrix[i++]);
+	free(matrix);
+}
+
+int	add_line(char *line, t_map *map)
+{
+	char **temp;
+
+	if (!(temp = matrix_increase(map->matrix, map->max_lines, 1)))
+		return (FAIL);
+	if (!(temp[map->max_lines] = ft_strdup(line)))
+		return (FAIL);
+	free_matrix (map->matrix);
+	map->matrix = temp;
+	map->max_lines++;
+	map->max_columns = ft_strlen(line) > map->max_columns ?
+						ft_strlen(line) : map->max_columns;
+
+	return (SUCCESS);
+}
+
+
+
+int		process_map(int fd, char *line, t_map *map)
+{
+	char	**token;
+	char	**temp;
+	int		count;
+	int		control;
+
+	control = add_line(line, map);
+	count = 0;
+	while (get_next_line(fd, &line) && control)
+	{
+		token = ft_split(line, ' ');
+		if (token[0][0] == '1' || token[0][0] == ' ')
+		{
+			control = add_line(line, map);
+			count ++;
+		}
+		else
+		{
+			control = FAIL;
+		}
+	}
+	if (control == FAIL)
+			free_matrix(map->matrix);
+	return (control == SUCCESS ? 0 : count);
+}
+
+
+
 int		process_file(char *file, t_scene *scene)
 {
 	int		fd;
@@ -260,18 +342,13 @@ int		process_file(char *file, t_scene *scene)
 				printf("Error\nNot enough parameters before map\n");
 				return (FAIL);
 			}
-			while (get_next_line(fd, &line))
+			else if ((control = process_map(fd, line, &scene->map))) //se mapa processado ok retorno 0
 			{
-				if (token[0][0] == '1' || token[0][0] == ' ')
-					count = count;
-				else
-				{
-					printf("Error\nError in line: ");
-					control = FAIL;
-					break ;
-				}
+				count += control;
+				control = FAIL;
 			}
-			return (SUCCESS);
+			else
+				control = SUCCESS;
 		}
 		else
 		{
@@ -290,12 +367,17 @@ int		process_file(char *file, t_scene *scene)
 int		main(int argc, char *argv[])
 {
 	t_scene scene = {0};
+	int i;
 
 	if (argc == 2)
 	{
 		if (check_name(argv[1]) && check_existence(argv[1]))
 			process_file(argv[1], &scene);
-			argc = argc;
+			i = 0;
+			while(scene.map.matrix[i])
+				printf("%s\n", scene.map.matrix[i++]);
+			printf("max_columns: %d\n", scene.map.max_columns);
+			printf("max_lines: %d\n", scene.map.max_lines);
 	}
 	else
 	{
