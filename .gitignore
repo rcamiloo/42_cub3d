@@ -1,0 +1,10 @@
+.objs/
+cub3d_destroyer/
+srcs/.gitignore
+srcs/.png/
+srcs/.xpm/
+srcs/cub3D
+srcs/invalid_maps/
+srcs/textures/
+srcs/valid_maps/
+srcs/wolftex/
