@@ -6,7 +6,7 @@
 /*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:07:00 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/02/28 23:59:02 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/06 18:14:34 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@ typedef struct	s_map
 char	**matrix;
 int		max_columns;
 int		max_lines;
+char	player_face;
+int		player_x;
+int		player_y;
 }				t_map;
 
 typedef struct	s_scene {

@@ -6,7 +6,7 @@
 /*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/03/01 00:33:07 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/06 20:03:27 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,6 +230,15 @@ int		process_line(char *line, t_scene *scene)
 }
 
 
+void print_matrix(char **matrix)
+{
+	int i;
+
+	i = 0;
+	while(matrix[i] != NULL)
+		printf("pp%s\n", matrix[i++]);
+}
+
 
 
 char	**matrix_increase(char **matrix, int max_lines, int increase)
@@ -258,6 +267,7 @@ void free_matrix(char **matrix)
 
 	if (matrix == NULL)
 		return;
+	i = 0;
 	while (matrix[i])
 		free(matrix[i++]);
 	free(matrix);
@@ -280,7 +290,134 @@ int	add_line(char *line, t_map *map)
 	return (SUCCESS);
 }
 
+int normalize_map(t_map *map)
+{
+	char	*temp;
+	int		size;
+	int		i;
+	int		j;
 
+	i = 0;
+	while(map->matrix[i])
+	{
+		size = ft_strlen((map->matrix[i]));
+		if(!(temp = (char *)malloc(sizeof(char) * (map->max_columns + 1))))
+			return (FAIL);
+		j = 0;
+		while (j < size)
+		{
+			temp[j] = map->matrix[i][j];
+			j++;
+		}
+		while (j < map->max_columns)
+			temp[j++] = ' ';
+		temp[map->max_columns] = '\0';
+		free(map->matrix[i]);
+		map->matrix[i] = temp;
+		i++;
+	}
+	return (SUCCESS);
+}
+
+int		check_line(t_map *map, int line)
+{
+	int i;
+
+	i = 0;
+	while(i < map->max_columns)
+	{
+		if (map->matrix[line][i] != ' ' && map->matrix[line][i] != '1')
+			return (FAIL);
+		i++;
+	}
+	return (SUCCESS);
+}
+
+int		check_column(t_map *map, int column)
+{
+	int i;
+
+	i = 0;
+	while(i < map->max_lines)
+	{
+		if (map->matrix[i][column] != ' ' && map->matrix[i][column] != '1')
+			return (FAIL);
+		i++;
+	}
+	return (SUCCESS);
+}
+
+int		verify_zero(t_map *map, int i, int j)
+{
+	int a = (ft_strrchr("012NEWS", map->matrix[i - 1][j - 1])
+		&& ft_strrchr("012NEWS", map->matrix[i - 1][j])
+		&& ft_strrchr("012NEWS", map->matrix[i - 1][j +1])
+		&& ft_strrchr("012NEWS", map->matrix[i][j - 1])
+		&& ft_strrchr("012NEWS", map->matrix[i][j + 1])
+		&& ft_strrchr("012NEWS", map->matrix[i + 1][j - 1])
+		&& ft_strrchr("012NEWS", map->matrix[i + 1][j])
+		&& ft_strrchr("012NEWS", map->matrix[i + 1][j + 1]));
+	if (a)
+		return (SUCCESS);
+	else
+		return (FAIL);
+}
+
+int		check_elements(t_map *map)
+{
+	int i;
+	int j;
+	int control;
+
+	i = 1;
+	while (i <(map->max_lines - 1))
+	{
+		j = 1;
+		while (j < (map->max_columns - 1))
+		{
+			if(ft_strrchr("0NSWE2", map->matrix[i][j]))
+			{
+				//printf("%c ", map->matrix[i][j]);
+				if(!(control = verify_zero(map, i, j)))
+					return (FAIL);
+				if(ft_strrchr("NSWE", map->matrix[i][j]))
+				{
+					if (map->player_face)
+						return (FAIL);
+					map->player_face =  map->matrix[i][j];
+					map->player_x = j;
+					map->player_y = i;
+				}
+			}
+			j++;
+		}
+		i++;
+		//printf("\n i = %d\n", i);
+	}
+	return (SUCCESS);
+}
+
+
+int		check_map(t_map *map)
+{
+	int control;
+
+	control = normalize_map(map);
+	if(!(check_line(map, 0) && check_line(map, map->max_lines - 1)
+		&& check_column(map, 0) && check_column(map, map->max_columns - 1)))
+		return (FAIL);
+	if(!check_elements(map))
+		return (FAIL);
+	if(!(map->player_face && map->player_x && map->player_y))
+		return (FAIL);
+	if (control && 0)
+	{
+		print_matrix(map->matrix);
+		printf("max_columns: %d\n", map->max_columns);
+		printf("max_lines: %d\n", map->max_lines);
+	}
+	return (SUCCESS);
+}
 
 int		process_map(int fd, char *line, t_map *map)
 {
@@ -288,22 +425,25 @@ int		process_map(int fd, char *line, t_map *map)
 	char	**temp;
 	int		count;
 	int		control;
+	int		gnl;
 
 	control = add_line(line, map);
 	count = 0;
-	while (get_next_line(fd, &line) && control)
+
+	while ((gnl = get_next_line(fd, &line)) >= 0 && control)
 	{
-		token = ft_split(line, ' ');
-		if (token[0][0] == '1' || token[0][0] == ' ')
+		//token = ft_split(line, ' ');
+		if (line[0] == '1' || line[0] == ' ' || line[0] == '\0')
 		{
 			control = add_line(line, map);
 			count ++;
 		}
 		else
-		{
 			control = FAIL;
-		}
+		if(!gnl)
+			break;
 	}
+	control = control ? check_map(map) : FAIL;
 	if (control == FAIL)
 			free_matrix(map->matrix);
 	return (control == SUCCESS ? 0 : count);
@@ -319,11 +459,12 @@ int		process_file(char *file, t_scene *scene)
 	int		count;
 	int		control;
 	char	**token;
+	int		gnl;
 
 	fd = open(file, O_RDONLY);
 	count = 0;
 	control = 1;
-	while (get_next_line(fd, &line) && control)
+	while (((gnl = get_next_line(fd, &line)) >= 0) && control)
 	{
 		temp = tab_sanitizer(line);
 		free(line);
@@ -346,6 +487,7 @@ int		process_file(char *file, t_scene *scene)
 			{
 				count += control;
 				control = FAIL;
+				printf("Error\nError in line: ");
 			}
 			else
 				control = SUCCESS;
@@ -356,9 +498,13 @@ int		process_file(char *file, t_scene *scene)
 			control = FAIL;
 		}
 		count += control ? 1 : 0;
+		if(!gnl)
+			break;
 	}
 	free(line);
 	close(fd);
+	if(!scene->map.player_face)
+		printf("Error\n");
 	if (control == FAIL)
 		printf("%d\n", count);
 	return (control);
@@ -374,10 +520,10 @@ int		main(int argc, char *argv[])
 		if (check_name(argv[1]) && check_existence(argv[1]))
 			process_file(argv[1], &scene);
 			i = 0;
-			while(scene.map.matrix[i])
-				printf("%s\n", scene.map.matrix[i++]);
-			printf("max_columns: %d\n", scene.map.max_columns);
-			printf("max_lines: %d\n", scene.map.max_lines);
+			// while(scene.map.matrix[i])
+			// 	printf("%s\n", scene.map.matrix[i++]);
+			// printf("max_columns: %d\n", scene.map.max_columns);
+			// printf("max_lines: %d\n", scene.map.max_lines);
 	}
 	else
 	{
