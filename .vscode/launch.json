@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/srcs/cub3D_debug",
-            "args": ["${workspaceFolder}/srcs/invalid_maps/invalid_map_area_023.cub"],
+            "args": ["${workspaceFolder}/srcs/valid_maps/valid_map_area_003.cub"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/srcs/",
             "environment": [],

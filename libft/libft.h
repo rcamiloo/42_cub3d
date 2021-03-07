@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/23 19:58:07 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/02/25 18:52:32 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/07 01:45:34 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ void			ft_lstclear(t_list **lst, void (*del)(void*));
 void			ft_lstiter(t_list *lst, void (*f)(void *));
 t_list			*ft_lstmap(t_list *lst, void *(*f)(void *),
 							void (*del)(void *));
-int				get_next_line(int fd, char **line);
+int				get_next_line(int fd, char **line, char **late_free);
 char			*ft_sanitize(char const *s1, char const *set);
 
 #endif

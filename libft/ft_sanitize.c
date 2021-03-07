@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_sanitize.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 18:49:08 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/02/25 19:16:46 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/07 12:58:18 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,14 @@ char	*ft_sanitize(char const *s1, char const *set)
 	while (s1[i])
 		if(!ft_strchr(set, s1[i++]))
 			size_new++;
-
-	new = (char *)malloc(sizeof(char) * (size_new + 1));
-	if (new == NULL)
+	if (!(new = (char *)malloc(sizeof(char) * (size_new + 1))))
 		return (NULL);
-	new[size_new--] = '\0';
-	while (size_s)
+	ft_memset(new, '\0', size_new + 1);
+	size_s--;
+	size_new--;
+	while (size_s >= 0)
 	{
-		if (!ft_strchr(set, s1[size_s]))
+		if (!(ft_strchr(set, s1[size_s])))
 			new[size_new--] = s1[size_s];
 		size_s--;
 	}

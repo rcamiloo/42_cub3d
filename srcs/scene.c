@@ -6,11 +6,12 @@
 /*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/03/06 22:52:53 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/07 14:20:27 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene.h"
+
 
 int		create_trgb(int t, int r, int g, int b)
 {
@@ -32,8 +33,14 @@ void free_matrix(char **matrix)
 		return;
 	i = 0;
 	while (matrix[i])
-		free(matrix[i++]);
+	{
+		free(matrix[i]);
+		matrix[i++] = NULL;
+	}
 	free(matrix);
+	if(matrix)
+		matrix = NULL;
+	return;
 }
 
 int		check_name(char *s)
@@ -153,15 +160,15 @@ int		process_texture(char **token, t_scene *scene)
 		return (FAIL);
 	}
 	if (!ft_strncmp(token[0], "NO\0", 3) && !scene->wall_no)
-		scene->wall_no = token[1];
+		scene->wall_no = ft_strdup(token[1]);
 	else if (!ft_strncmp(token[0], "SO\0", 3) && !scene->wall_so)
-		scene->wall_so = token[1];
+		scene->wall_so = ft_strdup(token[1]);
 	else if (!ft_strncmp(token[0], "WE\0", 3) && !scene->wall_we)
-		scene->wall_we = token[1];
+		scene->wall_we = ft_strdup(token[1]);
 	else if (!ft_strncmp(token[0], "EA\0", 3) && !scene->wall_ea)
-		scene->wall_ea = token[1];
+		scene->wall_ea = ft_strdup(token[1]);
 	else if (!ft_strncmp(token[0], "S\0", 2) && !scene->sprite)
-		scene->sprite = token[1];
+		scene->sprite = ft_strdup(token[1]);
 	else
 	{
 		printf("Error\nDuplicated parameter in line: ");
@@ -209,15 +216,15 @@ int		process_resolution(char **token, t_scene *scene)
 	return (SUCCESS);
 }
 
-char	*tab_sanitizer(char *s)
+void	tab_sanitizer(char **s)
 {
 	int		size;
 	int		i;
 	char	*temp;
 
-	size = ft_strlen(s);
-	if(!(temp = ft_strdup(s)))
-		return (NULL);
+	size = ft_strlen(*s);
+	if(!(temp = ft_strdup(*s)))
+		return;
 	i = 0;
 	while (i < size)
 	{
@@ -225,7 +232,9 @@ char	*tab_sanitizer(char *s)
 			temp[i] = ' ';
 		i++;
 	}
-	return (temp);
+	free(s);
+	*s = temp;
+	return;
 }
 
 int		process_line(char *line, t_scene *scene)
@@ -440,11 +449,18 @@ int		process_map(int fd, char *line, t_map *map)
 	int		count;
 	int		control;
 	int		gnl;
+	char 	*late_free;
 
 	control = add_line(line, map);
+	if(line)
+	{
+		free(line);
+		line = NULL;
+	}
 	count = 0;
+	late_free = NULL;
 
-	while ((gnl = get_next_line(fd, &line)) >= 0 && control)
+	while (control && ((gnl = get_next_line(fd, &line, &late_free)) >= 0))
 	{
 		if (line[0] == '1' || line[0] == ' ' || line[0] == '\0')
 		{
@@ -455,16 +471,28 @@ int		process_map(int fd, char *line, t_map *map)
 		{
 			control = FAIL;
 		}
-		free(line);
-		line = NULL;
+		if(line)
+		{
+			free(line);
+			line = NULL;
+		}
 		if(!gnl)
+		{
+			late_free = NULL;
 			break;
+		}
 	}
 	control = control ? check_map(map) : FAIL;
-	// if (control == FAIL)
-	// 		free_matrix(map->matrix);
-	if(line)
-		free(line);
+	// if(line)
+	// {
+	// 	free(line);
+	// 	line = NULL;
+	// }
+	if(late_free)
+	{
+		free(late_free);
+		late_free = NULL;
+	}
 	return (control == SUCCESS ? 0 : count);
 }
 
@@ -473,24 +501,30 @@ int		process_file(char *file, t_scene *scene)
 {
 	int		fd;
 	char	*line;
-	char	*temp;
 	int		count;
 	int		control;
 	char	**token;
 	int		gnl;
+	char	*late_free;
+	char	*temp;
 
 	fd = open(file, O_RDONLY);
 	count = 0;
 	control = 1;
+	temp = NULL;
 	line = NULL;
-	while (((gnl = get_next_line(fd, &line)) >= 0) && control)
+	late_free = NULL;
+	while (control && ((gnl = get_next_line(fd, &line, &late_free)) >= 0))
 	{
-		temp = tab_sanitizer(line);
+		temp = ft_sanitize(line, "\t");
 		free(line);
 		line = temp;
 		token = ft_split(line, ' ');
 		if (token[0] == '\0')
+		{
 			control = 1;
+			late_free = NULL;
+		}
 		else if (token[0][0] == 'R' || token[0][0] == 'N'
 			|| token[0][0] == 'S' || token[0][0] == 'W' || token[0][0] == 'E'
 			|| token[0][0] == 'F' || token[0][0] == 'C')
@@ -503,6 +537,11 @@ int		process_file(char *file, t_scene *scene)
 				free_matrix(token);
 				free(line);
 				line = NULL;
+				if(late_free)
+				{
+					free(late_free);
+					late_free = NULL;
+				}
 				close(fd);
 				return (FAIL);
 			}
@@ -510,6 +549,8 @@ int		process_file(char *file, t_scene *scene)
 			{
 				count += control;
 				control = FAIL;
+				late_free = NULL;
+				line = NULL;
 				printf("Error\nError in line: ");
 			}
 			else
@@ -521,14 +562,36 @@ int		process_file(char *file, t_scene *scene)
 			control = FAIL;
 		}
 		count += control ? 1 : 0;
+		free_matrix(token);
+		token = NULL;
+		if(line != NULL)
+		{
+			free(line);
+			line = NULL;
+		}
+		if(!gnl)
+		{
+			if(line != NULL)
+			{
+				free(line);
+				line = NULL;
+			}
+			late_free = NULL;
+			break;
+		}
+	}
+	if(late_free)
+	{
+		free(late_free);
+		late_free = NULL;
+	}
+	if(line != NULL)
+	{
 		free(line);
 		line = NULL;
-		free_matrix(token);
-		if(!gnl)
-			break;
 	}
-	if(line)
-		free(line);
+	//if(token != NULL)
+	//	free_matrix(token);
 	close(fd);
 	if(!scene->map.player_face)
 		printf("Error\n");
@@ -557,6 +620,12 @@ int		main(int argc, char *argv[])
 		printf("Error");
 		return (1);
 	}
-	free_matrix(scene.map.matrix);
+	if(scene.map.matrix)
+		free_matrix(scene.map.matrix);
+	free(scene.wall_ea);
+	free(scene.wall_no);
+	free(scene.wall_so);
+	free(scene.wall_we);
+	free(scene.sprite);
 	return (0);
 }

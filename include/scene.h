@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   scene.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:07:00 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/03/06 18:14:34 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/07 11:31:34 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ int	process_colors(char *line, t_scene *scene);
 int	process_texture(char **token, t_scene *scene);
 int check_resolution(char *s);
 int	process_resolution(char **token, t_scene *scene);
-char *tab_sanitizer(char *s);
+void tab_sanitizer(char **s);
 int	process_line(char *line, t_scene *scene);
 int	process_file(char *file, t_scene *scene);
 
