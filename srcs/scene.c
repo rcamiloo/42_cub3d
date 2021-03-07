@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   scene.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcamilo- <rcamilo-@student.42sp.org.br>    +#+  +:+       +#+        */
+/*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/03/06 20:03:27 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/06 22:52:53 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,25 @@
 int		create_trgb(int t, int r, int g, int b)
 {
 	return (t << 24 | r << 16 | g << 8 | b);
+}
+
+void	ft_free(void *pointer)
+{
+	free(pointer);
+	pointer = NULL;
+	return;
+}
+
+void free_matrix(char **matrix)
+{
+	int i;
+
+	if (matrix == NULL)
+		return;
+	i = 0;
+	while (matrix[i])
+		free(matrix[i++]);
+	free(matrix);
 }
 
 int		check_name(char *s)
@@ -86,20 +105,25 @@ int		process_colors(char *line, t_scene *scene)
 	int		r;
 	int		g;
 	int		b;
-	char	*temp;
+	char	*temp1;
+	char	*temp2;
 
-	temp = ft_sanitize(ft_strtrim(line, " ") + 1, " ");
-	rgb = ft_split(temp, ',');
-	if (check_colors(temp) == FAIL || vector_size(rgb) != 3)
+	temp1 = ft_strtrim(line, " ");
+	temp2 = ft_sanitize(temp1 + 1, " ");
+	free(temp1);
+	rgb = ft_split(temp2, ',');
+	if (check_colors(temp2) == FAIL || vector_size(rgb) != 3)
 	{
 		printf("Error\nColor error in line: ");
+		free_matrix(rgb);
+		free(temp2);
 		return (FAIL);
 	}
 	r = atoi(rgb[0]);
 	g = atoi(rgb[1]);
 	b = atoi(rgb[2]);
-	free(rgb);
-	free(temp);
+	free_matrix(rgb);
+	free(temp2);
 	if ((r < 0 || r > 255) || (g < 0 || g > 255) || (b < 0 || b > 255))
 	{
 		printf("Error\nColor error in line: ");
@@ -113,10 +137,11 @@ int		process_colors(char *line, t_scene *scene)
 	else
 	{
 		printf("Error\nColor error in line: ");
+		free_matrix(rgb);
 		return (FAIL);
 	}
 	scene->control++;
-	free(temp);
+	free_matrix(rgb);
 	return (SUCCESS);
 }
 
@@ -191,7 +216,8 @@ char	*tab_sanitizer(char *s)
 	char	*temp;
 
 	size = ft_strlen(s);
-	temp = ft_strdup(s);
+	if(!(temp = ft_strdup(s)))
+		return (NULL);
 	i = 0;
 	while (i < size)
 	{
@@ -225,7 +251,7 @@ int		process_line(char *line, t_scene *scene)
 		control = FAIL;
 		printf("Error\nProcessing line: ");
 	}
-	free(token);
+	free_matrix(token);
 	return (control);
 }
 
@@ -261,17 +287,7 @@ char	**matrix_increase(char **matrix, int max_lines, int increase)
 	return temp;
 }
 
-void free_matrix(char **matrix)
-{
-	int i;
 
-	if (matrix == NULL)
-		return;
-	i = 0;
-	while (matrix[i])
-		free(matrix[i++]);
-	free(matrix);
-}
 
 int	add_line(char *line, t_map *map)
 {
@@ -421,8 +437,6 @@ int		check_map(t_map *map)
 
 int		process_map(int fd, char *line, t_map *map)
 {
-	char	**token;
-	char	**temp;
 	int		count;
 	int		control;
 	int		gnl;
@@ -432,23 +446,27 @@ int		process_map(int fd, char *line, t_map *map)
 
 	while ((gnl = get_next_line(fd, &line)) >= 0 && control)
 	{
-		//token = ft_split(line, ' ');
 		if (line[0] == '1' || line[0] == ' ' || line[0] == '\0')
 		{
 			control = add_line(line, map);
 			count ++;
 		}
 		else
+		{
 			control = FAIL;
+		}
+		free(line);
+		line = NULL;
 		if(!gnl)
 			break;
 	}
 	control = control ? check_map(map) : FAIL;
-	if (control == FAIL)
-			free_matrix(map->matrix);
+	// if (control == FAIL)
+	// 		free_matrix(map->matrix);
+	if(line)
+		free(line);
 	return (control == SUCCESS ? 0 : count);
 }
-
 
 
 int		process_file(char *file, t_scene *scene)
@@ -464,6 +482,7 @@ int		process_file(char *file, t_scene *scene)
 	fd = open(file, O_RDONLY);
 	count = 0;
 	control = 1;
+	line = NULL;
 	while (((gnl = get_next_line(fd, &line)) >= 0) && control)
 	{
 		temp = tab_sanitizer(line);
@@ -481,6 +500,10 @@ int		process_file(char *file, t_scene *scene)
 			if (scene->control != 9)
 			{
 				printf("Error\nNot enough parameters before map\n");
+				free_matrix(token);
+				free(line);
+				line = NULL;
+				close(fd);
 				return (FAIL);
 			}
 			else if ((control = process_map(fd, line, &scene->map))) //se mapa processado ok retorno 0
@@ -498,10 +521,14 @@ int		process_file(char *file, t_scene *scene)
 			control = FAIL;
 		}
 		count += control ? 1 : 0;
+		free(line);
+		line = NULL;
+		free_matrix(token);
 		if(!gnl)
 			break;
 	}
-	free(line);
+	if(line)
+		free(line);
 	close(fd);
 	if(!scene->map.player_face)
 		printf("Error\n");
@@ -530,5 +557,6 @@ int		main(int argc, char *argv[])
 		printf("Error");
 		return (1);
 	}
+	free_matrix(scene.map.matrix);
 	return (0);
 }

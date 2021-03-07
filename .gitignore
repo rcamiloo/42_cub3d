@@ -1,6 +1,7 @@
 .objs/
 cub3d_destroyer/
 cub3D_map_tester/
+cub3D_leaks_maps_tester/
 srcs/.gitignore
 srcs/.png/
 srcs/.xpm/
