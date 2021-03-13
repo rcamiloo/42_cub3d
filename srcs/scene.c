@@ -6,31 +6,23 @@
 /*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/03/07 14:20:27 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/12 22:44:35 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene.h"
-
 
 int		create_trgb(int t, int r, int g, int b)
 {
 	return (t << 24 | r << 16 | g << 8 | b);
 }
 
-void	ft_free(void *pointer)
-{
-	free(pointer);
-	pointer = NULL;
-	return;
-}
-
-void free_matrix(char **matrix)
+void	free_matrix(char **matrix)
 {
 	int i;
 
 	if (matrix == NULL)
-		return;
+		return ;
 	i = 0;
 	while (matrix[i])
 	{
@@ -38,9 +30,9 @@ void free_matrix(char **matrix)
 		matrix[i++] = NULL;
 	}
 	free(matrix);
-	if(matrix)
+	if (matrix)
 		matrix = NULL;
-	return;
+	return ;
 }
 
 int		check_name(char *s)
@@ -126,11 +118,11 @@ int		process_colors(char *line, t_scene *scene)
 		free(temp2);
 		return (FAIL);
 	}
+	free(temp2);
 	r = atoi(rgb[0]);
 	g = atoi(rgb[1]);
 	b = atoi(rgb[2]);
 	free_matrix(rgb);
-	free(temp2);
 	if ((r < 0 || r > 255) || (g < 0 || g > 255) || (b < 0 || b > 255))
 	{
 		printf("Error\nColor error in line: ");
@@ -223,8 +215,8 @@ void	tab_sanitizer(char **s)
 	char	*temp;
 
 	size = ft_strlen(*s);
-	if(!(temp = ft_strdup(*s)))
-		return;
+	if (!(temp = ft_strdup(*s)))
+		return ;
 	i = 0;
 	while (i < size)
 	{
@@ -234,7 +226,7 @@ void	tab_sanitizer(char **s)
 	}
 	free(s);
 	*s = temp;
-	return;
+	return ;
 }
 
 int		process_line(char *line, t_scene *scene)
@@ -264,41 +256,35 @@ int		process_line(char *line, t_scene *scene)
 	return (control);
 }
 
-
-void print_matrix(char **matrix)
+void	print_matrix(char **matrix)
 {
 	int i;
 
 	i = 0;
-	while(matrix[i] != NULL)
+	while (matrix[i] != NULL)
 		printf("pp%s\n", matrix[i++]);
 }
 
-
-
 char	**matrix_increase(char **matrix, int max_lines, int increase)
 {
-	char **temp;
-	int i;
+	char	**temp;
+	int		i;
 
-	if (!(temp = (char **)malloc (sizeof (char *) * (max_lines + increase + 1))))
-		return NULL;
-
+	if (!(temp = (char **)malloc(sizeof(char *) * (max_lines + increase + 1))))
+		return (NULL);
 	i = 0;
 	while (i < max_lines)
 	{
 		if (!(temp[i] = ft_strdup(matrix[i])))
-			return NULL;
+			return (NULL);
 		i++;
 	}
 	while (i <= max_lines + increase)
 		temp[i++] = NULL;
-	return temp;
+	return (temp);
 }
 
-
-
-int	add_line(char *line, t_map *map)
+int		add_line(char *line, t_map *map)
 {
 	char **temp;
 
@@ -306,16 +292,15 @@ int	add_line(char *line, t_map *map)
 		return (FAIL);
 	if (!(temp[map->max_lines] = ft_strdup(line)))
 		return (FAIL);
-	free_matrix (map->matrix);
+	free_matrix(map->matrix);
 	map->matrix = temp;
 	map->max_lines++;
 	map->max_columns = ft_strlen(line) > map->max_columns ?
 						ft_strlen(line) : map->max_columns;
-
 	return (SUCCESS);
 }
 
-int normalize_map(t_map *map)
+int		normalize_map(t_map *map)
 {
 	char	*temp;
 	int		size;
@@ -323,10 +308,10 @@ int normalize_map(t_map *map)
 	int		j;
 
 	i = 0;
-	while(map->matrix[i])
+	while (map->matrix[i])
 	{
 		size = ft_strlen((map->matrix[i]));
-		if(!(temp = (char *)malloc(sizeof(char) * (map->max_columns + 1))))
+		if (!(temp = (char *)malloc(sizeof(char) * (map->max_columns + 1))))
 			return (FAIL);
 		j = 0;
 		while (j < size)
@@ -349,7 +334,7 @@ int		check_line(t_map *map, int line)
 	int i;
 
 	i = 0;
-	while(i < map->max_columns)
+	while (i < map->max_columns)
 	{
 		if (map->matrix[line][i] != ' ' && map->matrix[line][i] != '1')
 			return (FAIL);
@@ -363,7 +348,7 @@ int		check_column(t_map *map, int column)
 	int i;
 
 	i = 0;
-	while(i < map->max_lines)
+	while (i < map->max_lines)
 	{
 		if (map->matrix[i][column] != ' ' && map->matrix[i][column] != '1')
 			return (FAIL);
@@ -374,15 +359,14 @@ int		check_column(t_map *map, int column)
 
 int		verify_zero(t_map *map, int i, int j)
 {
-	int a = (ft_strrchr("012NEWS", map->matrix[i - 1][j - 1])
+	if (ft_strrchr("012NEWS", map->matrix[i - 1][j - 1])
 		&& ft_strrchr("012NEWS", map->matrix[i - 1][j])
-		&& ft_strrchr("012NEWS", map->matrix[i - 1][j +1])
+		&& ft_strrchr("012NEWS", map->matrix[i - 1][j + 1])
 		&& ft_strrchr("012NEWS", map->matrix[i][j - 1])
 		&& ft_strrchr("012NEWS", map->matrix[i][j + 1])
 		&& ft_strrchr("012NEWS", map->matrix[i + 1][j - 1])
 		&& ft_strrchr("012NEWS", map->matrix[i + 1][j])
-		&& ft_strrchr("012NEWS", map->matrix[i + 1][j + 1]));
-	if (a)
+		&& ft_strrchr("012NEWS", map->matrix[i + 1][j + 1]))
 		return (SUCCESS);
 	else
 		return (FAIL);
@@ -395,21 +379,20 @@ int		check_elements(t_map *map)
 	int control;
 
 	i = 1;
-	while (i <(map->max_lines - 1))
+	while (i < (map->max_lines - 1))
 	{
 		j = 1;
 		while (j < (map->max_columns - 1))
 		{
-			if(ft_strrchr("0NSWE2", map->matrix[i][j]))
+			if (ft_strrchr("0NSWE2", map->matrix[i][j]))
 			{
-				//printf("%c ", map->matrix[i][j]);
-				if(!(control = verify_zero(map, i, j)))
+				if (!(control = verify_zero(map, i, j)))
 					return (FAIL);
-				if(ft_strrchr("NSWE", map->matrix[i][j]))
+				if (ft_strrchr("NSWE", map->matrix[i][j]))
 				{
 					if (map->player_face)
 						return (FAIL);
-					map->player_face =  map->matrix[i][j];
+					map->player_face = map->matrix[i][j];
 					map->player_x = j;
 					map->player_y = i;
 				}
@@ -417,23 +400,21 @@ int		check_elements(t_map *map)
 			j++;
 		}
 		i++;
-		//printf("\n i = %d\n", i);
 	}
 	return (SUCCESS);
 }
-
 
 int		check_map(t_map *map)
 {
 	int control;
 
 	control = normalize_map(map);
-	if(!(check_line(map, 0) && check_line(map, map->max_lines - 1)
+	if (!(check_line(map, 0) && check_line(map, map->max_lines - 1)
 		&& check_column(map, 0) && check_column(map, map->max_columns - 1)))
 		return (FAIL);
-	if(!check_elements(map))
+	if (!check_elements(map))
 		return (FAIL);
-	if(!(map->player_face && map->player_x && map->player_y))
+	if (!(map->player_face && map->player_x && map->player_y))
 		return (FAIL);
 	if (control && 0)
 	{
@@ -444,58 +425,42 @@ int		check_map(t_map *map)
 	return (SUCCESS);
 }
 
+void	ft_free(char **pointer)
+{
+	if (*pointer != NULL)
+	{
+		free(*pointer);
+		*pointer = NULL;
+	}
+	return ;
+}
+
 int		process_map(int fd, char *line, t_map *map)
 {
-	int		count;
 	int		control;
 	int		gnl;
-	char 	*late_free;
+	char	*late_free;
 
 	control = add_line(line, map);
-	if(line)
-	{
-		free(line);
-		line = NULL;
-	}
-	count = 0;
+	ft_free(&line);
 	late_free = NULL;
-
 	while (control && ((gnl = get_next_line(fd, &line, &late_free)) >= 0))
 	{
 		if (line[0] == '1' || line[0] == ' ' || line[0] == '\0')
-		{
 			control = add_line(line, map);
-			count ++;
-		}
 		else
-		{
 			control = FAIL;
-		}
-		if(line)
-		{
-			free(line);
-			line = NULL;
-		}
-		if(!gnl)
+		ft_free(&line);
+		if (!gnl)
 		{
 			late_free = NULL;
-			break;
+			break ;
 		}
 	}
 	control = control ? check_map(map) : FAIL;
-	// if(line)
-	// {
-	// 	free(line);
-	// 	line = NULL;
-	// }
-	if(late_free)
-	{
-		free(late_free);
-		late_free = NULL;
-	}
-	return (control == SUCCESS ? 0 : count);
+	ft_free(&late_free);
+	return (control == SUCCESS ? 0 : 1);
 }
-
 
 int		process_file(char *file, t_scene *scene)
 {
@@ -535,17 +500,12 @@ int		process_file(char *file, t_scene *scene)
 			{
 				printf("Error\nNot enough parameters before map\n");
 				free_matrix(token);
-				free(line);
-				line = NULL;
-				if(late_free)
-				{
-					free(late_free);
-					late_free = NULL;
-				}
+				ft_free(&line);
+				ft_free(&late_free);
 				close(fd);
 				return (FAIL);
 			}
-			else if ((control = process_map(fd, line, &scene->map))) //se mapa processado ok retorno 0
+			else if ((control = process_map(fd, line, &scene->map)))
 			{
 				count += control;
 				control = FAIL;
@@ -554,7 +514,10 @@ int		process_file(char *file, t_scene *scene)
 				printf("Error\nError in line: ");
 			}
 			else
+			{
 				control = SUCCESS;
+				line = NULL;
+			}
 		}
 		else
 		{
@@ -564,36 +527,18 @@ int		process_file(char *file, t_scene *scene)
 		count += control ? 1 : 0;
 		free_matrix(token);
 		token = NULL;
-		if(line != NULL)
+		ft_free(&line);
+		if (!gnl)
 		{
-			free(line);
-			line = NULL;
-		}
-		if(!gnl)
-		{
-			if(line != NULL)
-			{
-				free(line);
-				line = NULL;
-			}
+			ft_free(&line);
 			late_free = NULL;
-			break;
+			break ;
 		}
 	}
-	if(late_free)
-	{
-		free(late_free);
-		late_free = NULL;
-	}
-	if(line != NULL)
-	{
-		free(line);
-		line = NULL;
-	}
-	//if(token != NULL)
-	//	free_matrix(token);
+	ft_free(&late_free);
+	ft_free(&line);
 	close(fd);
-	if(!scene->map.player_face)
+	if (!scene->map.player_face)
 		printf("Error\n");
 	if (control == FAIL)
 		printf("%d\n", count);
@@ -610,7 +555,7 @@ int		main(int argc, char *argv[])
 		if (check_name(argv[1]) && check_existence(argv[1]))
 			process_file(argv[1], &scene);
 			i = 0;
-			// while(scene.map.matrix[i])
+			// while (scene.map.matrix[i])
 			// 	printf("%s\n", scene.map.matrix[i++]);
 			// printf("max_columns: %d\n", scene.map.max_columns);
 			// printf("max_lines: %d\n", scene.map.max_lines);
@@ -620,7 +565,7 @@ int		main(int argc, char *argv[])
 		printf("Error");
 		return (1);
 	}
-	if(scene.map.matrix)
+	if (scene.map.matrix)
 		free_matrix(scene.map.matrix);
 	free(scene.wall_ea);
 	free(scene.wall_no);
