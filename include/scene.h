@@ -6,7 +6,7 @@
 /*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:07:00 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/03/07 11:31:34 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/13 14:13:58 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,17 +45,17 @@ typedef struct	s_scene {
 
 
 
-int	create_trgb(int t, int r, int g, int b);
+int	create_trgb(char *t, char *r, char *g, char *b);
 int	check_name(char *s);
 int	check_existence(char *s);
 int	vector_size(char **vector);
 int check_colors(char *s);
-int	process_colors(char *line, t_scene *scene);
+int	process_colors(char **line, t_scene *scene);
 int	process_texture(char **token, t_scene *scene);
 int check_resolution(char *s);
 int	process_resolution(char **token, t_scene *scene);
 void tab_sanitizer(char **s);
-int	process_line(char *line, t_scene *scene);
+int	process_config(char **line, t_scene *scene);
 int	process_file(char *file, t_scene *scene);
 
 #endif

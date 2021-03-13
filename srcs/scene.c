@@ -6,15 +6,34 @@
 /*   By: rcamilo- <rcamilo-@student.42sp.br>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/25 17:24:05 by rcamilo-          #+#    #+#             */
-/*   Updated: 2021/03/12 22:44:35 by rcamilo-         ###   ########.fr       */
+/*   Updated: 2021/03/13 17:04:19 by rcamilo-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "scene.h"
 
-int		create_trgb(int t, int r, int g, int b)
+int		create_trgb(char *t, char *r, char *g, char *b)
 {
-	return (t << 24 | r << 16 | g << 8 | b);
+	int tt;
+	int rr;
+	int gg;
+	int bb;
+
+	tt = atoi(t);
+	rr = atoi(r);
+	gg = atoi(r);
+	bb = atoi(g);
+	return (tt << 24 | rr << 16 | gg << 8 | bb);
+}
+
+void	ft_free(char **pointer)
+{
+	if (*pointer != NULL)
+	{
+		free(*pointer);
+		*pointer = NULL;
+	}
+	return ;
 }
 
 void	free_matrix(char **matrix)
@@ -73,7 +92,7 @@ int		vector_size(char **vector)
 	return (i);
 }
 
-int		check_colors(char *s)
+int		check_color_structure(char *s)
 {
 	int size;
 	int i;
@@ -98,50 +117,64 @@ int		check_colors(char *s)
 	return (comma != 2 ? FAIL : SUCCESS);
 }
 
-int		process_colors(char *line, t_scene *scene)
+int		check_colors(char *s)
 {
-	char	**rgb;
-	int		r;
-	int		g;
-	int		b;
 	char	*temp1;
 	char	*temp2;
+	char	**rgb;
 
-	temp1 = ft_strtrim(line, " ");
-	temp2 = ft_sanitize(temp1 + 1, " ");
-	free(temp1);
-	rgb = ft_split(temp2, ',');
-	if (check_colors(temp2) == FAIL || vector_size(rgb) != 3)
-	{
-		printf("Error\nColor error in line: ");
-		free_matrix(rgb);
-		free(temp2);
+	if (!check_color_structure(s))
 		return (FAIL);
-	}
-	free(temp2);
-	r = atoi(rgb[0]);
-	g = atoi(rgb[1]);
-	b = atoi(rgb[2]);
-	free_matrix(rgb);
-	if ((r < 0 || r > 255) || (g < 0 || g > 255) || (b < 0 || b > 255))
+	rgb = ft_split(s, ',');
+	if (vector_size(rgb) != 3)
 	{
-		printf("Error\nColor error in line: ");
-		return (FAIL);
-	}
-	rgb = ft_split(line, ' ');
-	if (rgb[0][0] == 'C' && !scene->color_ceiling)
-		scene->color_ceiling = create_trgb(0, r, g, b);
-	else if (rgb[0][0] == 'F' && !scene->color_floor)
-		scene->color_floor = create_trgb(0, r, g, b);
-	else
-	{
-		printf("Error\nColor error in line: ");
 		free_matrix(rgb);
 		return (FAIL);
 	}
-	scene->control++;
+	if ((atoi(rgb[0]) < 0 || atoi(rgb[0]) > 255)
+		|| (atoi(rgb[1]) < 0 || atoi(rgb[1]) > 255)
+		|| (atoi(rgb[2]) < 0 || atoi(rgb[2]) > 255))
+	{
+		free_matrix(rgb);
+		return (FAIL);
+	}
 	free_matrix(rgb);
 	return (SUCCESS);
+}
+
+int		assign_color(char *s, t_scene *scene, char **rgb)
+{
+	if (s[0] == 'C' && !scene->color_ceiling)
+		scene->color_ceiling = create_trgb("0", rgb[0], rgb[1], rgb[2]);
+	else if (s[0] == 'F' && !scene->color_floor)
+		scene->color_floor = create_trgb("0", rgb[0], rgb[1], rgb[2]);
+	else
+		return (FAIL);
+	return (SUCCESS);
+}
+
+int		process_colors(char **line, t_scene *scene)
+{
+	char	**rgb;
+	char	*temp1;
+	int		control;
+
+	control = SUCCESS;
+	temp1 = ft_strtrim(*line, " ");
+	ft_free(line);
+	*line = ft_sanitize(temp1 + 1, " ");
+	rgb = ft_split(*line, ',');
+	if (check_colors(*line) == FAIL)
+		control = FAIL;
+	else
+		control = assign_color(temp1, scene, rgb);
+	ft_free(&temp1);
+	free_matrix(rgb);
+	if (control)
+		scene->control++;
+	else
+		printf("Error\nColor error in line: ");
+	return (control);
 }
 
 int		process_texture(char **token, t_scene *scene)
@@ -229,14 +262,14 @@ void	tab_sanitizer(char **s)
 	return ;
 }
 
-int		process_line(char *line, t_scene *scene)
+int		process_line(char **line, t_scene *scene)
 {
 	char	**token;
 	int		i;
 	int		size;
 	int		control;
 
-	token = ft_split(line, ' ');
+	token = ft_split(*line, ' ');
 	size = vector_size(token);
 	if ((!ft_strncmp(token[0], "NO\0", 3) || !ft_strncmp(token[0], "SO\0", 3)
 	|| !ft_strncmp(token[0], "WE\0", 3) || !ft_strncmp(token[0], "EA\0", 3)
@@ -372,11 +405,20 @@ int		verify_zero(t_map *map, int i, int j)
 		return (FAIL);
 }
 
+int		assign_player_position(t_map *map, int i, int j)
+{
+	if (map->player_face)
+		return (FAIL);
+	map->player_face = map->matrix[i][j];
+	map->player_x = j;
+	map->player_y = i;
+	return (SUCCESS);
+}
+
 int		check_elements(t_map *map)
 {
 	int i;
 	int j;
-	int control;
 
 	i = 1;
 	while (i < (map->max_lines - 1))
@@ -386,16 +428,11 @@ int		check_elements(t_map *map)
 		{
 			if (ft_strrchr("0NSWE2", map->matrix[i][j]))
 			{
-				if (!(control = verify_zero(map, i, j)))
+				if (!(verify_zero(map, i, j)))
 					return (FAIL);
 				if (ft_strrchr("NSWE", map->matrix[i][j]))
-				{
-					if (map->player_face)
+					if (!assign_player_position(map, i, j))
 						return (FAIL);
-					map->player_face = map->matrix[i][j];
-					map->player_x = j;
-					map->player_y = i;
-				}
 			}
 			j++;
 		}
@@ -423,16 +460,6 @@ int		check_map(t_map *map)
 		printf("max_lines: %d\n", map->max_lines);
 	}
 	return (SUCCESS);
-}
-
-void	ft_free(char **pointer)
-{
-	if (*pointer != NULL)
-	{
-		free(*pointer);
-		*pointer = NULL;
-	}
-	return ;
 }
 
 int		process_map(int fd, char *line, t_map *map)
@@ -493,7 +520,7 @@ int		process_file(char *file, t_scene *scene)
 		else if (token[0][0] == 'R' || token[0][0] == 'N'
 			|| token[0][0] == 'S' || token[0][0] == 'W' || token[0][0] == 'E'
 			|| token[0][0] == 'F' || token[0][0] == 'C')
-			control = process_line(line, scene);
+			control = process_line(&line, scene);
 		else if (token[0][0] == '1' || token[0][0] == ' ')
 		{
 			if (scene->control != 9)
